@@ -5,13 +5,14 @@ import api from "./utils/api";
 
 const App = () => {
   const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
   const [region, setRegion] = useState("us");
   const [seed, setSeed] = useState(Math.floor(Math.random() * 10000000));
-  const [errors, setErrors] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [errorCount, setErrorCount] = useState(0);
+  const [sliderValue, setSliderValue] = useState(0);
 
   const fetchData = async (batchSize = 20, reset = false) => {
     setLoading(true);
@@ -23,21 +24,26 @@ const App = () => {
           seed,
           pageNumber,
           batchSize,
-          errors,
+          errors: 0,
         },
       });
 
       if (reset) {
         setData(response.data);
+        setOriginalData(response.data);
+        setPageNumber(2);
       } else {
         setData((prevData) => [...prevData, ...response.data]);
+        setOriginalData((prevOriginalData) => [
+          ...prevOriginalData,
+          ...response.data,
+        ]);
+        setPageNumber((prevPageNumber) => prevPageNumber + 1);
       }
 
       if (response.data.length < batchSize) {
         setHasMore(false);
       }
-
-      setPageNumber((prevPageNumber) => prevPageNumber + 1);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -48,31 +54,51 @@ const App = () => {
   useEffect(() => {
     setPageNumber(1);
     fetchData(20, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [region, seed, errors]);
+  }, [region, seed]);
+
+  const applyErrorsToData = async () => {
+    try {
+      const response = await api.post(`/applyErrors`, {
+        data: originalData,
+        errorCount,
+      });
+      setData(response.data);
+    } catch (error) {
+      console.error("Error applying errors:", error);
+    }
+  };
 
   const handleRegionChange = (event) => {
     setRegion(event.target.value);
     setPageNumber(1);
     setHasMore(true);
     setData([]);
-  };
-
-  const handleSliderChange = (e) => {
-    const value = e.target.value;
-    setErrorCount(value);
-    setErrors(value);
+    setErrorCount(0);
   };
 
   const handleNumberChange = (e) => {
     const value = Math.min(e.target.value, 1000);
     setErrorCount(value);
-    setErrors(value);
+    applyErrorsToData();
+
+    if (value <= 10) {
+      setSliderValue(value);
+    } else {
+      setSliderValue(10);
+    }
+  };
+
+  const handleSliderChange = (e) => {
+    const value = parseFloat(e.target.value);
+    setSliderValue(value);
+    setErrorCount(value);
+    applyErrorsToData();
   };
 
   const generateRandomSeed = () => {
     const randomSeed = Math.floor(Math.random() * 10000000);
     setSeed(randomSeed);
+    setPageNumber(1);
   };
 
   const handleCSVExport = async () => {
@@ -83,7 +109,7 @@ const App = () => {
           seed,
           pageNumber,
           batchSize: 20,
-          errors,
+          errors: errorCount,
         },
         responseType: "blob",
       });
@@ -132,19 +158,25 @@ const App = () => {
         <div className="app__control">
           <label htmlFor="errorCount">Errors Per Record:</label>
           <input
-            type="range"
-            min="0"
-            max="10"
-            step="0.1"
-            value={errorCount}
-            onChange={handleSliderChange}
-          />
-          <input
             type="number"
             min="0"
             max="1000"
             value={errorCount}
             onChange={handleNumberChange}
+          />
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="0.5"
+            title={
+              errorCount > 10
+                ? "Not available for errors higher than 10"
+                : "Set errors from 0 to 10"
+            }
+            value={errorCount > 10 ? 10 : sliderValue}
+            onChange={handleSliderChange}
+            disabled={errorCount > 10}
           />
         </div>
 
@@ -154,7 +186,10 @@ const App = () => {
             type="number"
             id="seed"
             value={seed}
-            onChange={(e) => setSeed(parseInt(e.target.value))}
+            onChange={(e) => {
+              setPageNumber(1);
+              setSeed(parseInt(e.target.value));
+            }}
           />
           <button className="app__control-button" onClick={generateRandomSeed}>
             Generate Random Seed

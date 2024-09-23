@@ -135,7 +135,7 @@ const App = () => {
           alt="app-icon"
           style={{ marginRight: "10px" }}
         />
-        User Gen Pro
+        User Generator Pro
       </h1>
 
       <div className="app__controls">

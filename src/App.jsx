@@ -102,7 +102,15 @@ const App = () => {
 
   return (
     <div className="app">
-      <h1 className="app__header">Fake User Data Generator</h1>
+      <h1 className="app__header">
+        <img
+          src="/user.png"
+          width={30}
+          alt="app-icon"
+          style={{ marginRight: "10px" }}
+        />
+        User Gen Pro
+      </h1>
 
       <div className="app__controls">
         <div className="app__control">

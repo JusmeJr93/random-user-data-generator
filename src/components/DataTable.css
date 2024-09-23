@@ -3,9 +3,10 @@
     overflow-y: auto;
     border: 1px solid #dee2e6;
     border-radius: 8px;
-    margin-top: 30px;
+    margin-top: 20px;
     background-color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 .data-table-container::-webkit-scrollbar {

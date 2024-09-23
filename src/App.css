@@ -16,7 +16,8 @@ body {
     font-size: 2rem;
     font-weight: bold;
     color: #007bff;
-    margin-bottom: 20px;
+    margin-top: 0;
+    margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -25,10 +26,11 @@ body {
     display: grid;
     grid-template-columns: 1fr;
     gap: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
     background-color: #ffffff;
     border-radius: 8px;
     padding: 20px;
+    padding-bottom: 0;
     border: 1px solid #e0e0e0;
 }
 
@@ -44,6 +46,7 @@ body {
 .app__control label {
     font-weight: bold;
     margin-bottom: 8px;
+    font-size: 1.3rem;
 }
 
 .app__control select,
